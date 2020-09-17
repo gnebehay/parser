@@ -44,7 +44,7 @@ The literature regarding this topic is very formal,
 which makes it a bit hard to get into the topic for an uninitiated person.
 In this description, I have tried to focus more on intuitive explanations.
 However, to me it is quite clear that if you don't stick to the theory,
-then you will soon run into things that are hard to make sense of,
+then you will soon run into things that are hard to make sense of
 if you cannot connect it to what's going on in the literature.
 
 
@@ -74,11 +74,11 @@ For example, if the current symbol on the stack is `S` and the current input ter
 and there is a rule in the grammar that allows
 
 ```
-S -> a T
+S -> a P
 ```
 
-then `S` should be replaced with `a T`.
-Here, `S` and `T` are non-terminals, and for the remainder of this document,
+then `S` should be replaced with `a P`.
+Here, `S` and `P` are non-terminals, and for the remainder of this document,
 capitalized grammar elements are considered non-terminals,
 and lower-case grammar elements, such as `a` are considered a terminal.
 To continue the example, `a` on top of the stack is now matched to the input stream terminal `a`
