@@ -28,7 +28,7 @@ to get a visual reprentation of the abstract syntax tree
 [It was pointed out correctly](https://github.com/gnebehay/parser/issues/3)
 that all operators behave as right-associative instead of as left-associative, as they should.
 This means that for example `7-4+2` evaluates to `1` instead of `5`.
-Surprisingly, it seems that it is an (inherent limitation)[https://cs.stackexchange.com/a/43071]
+Surprisingly, it seems that it is an [inherent limitation](https://cs.stackexchange.com/a/43071)
 of LL(1) parsing that you can't model left-associativity.
 In case you know of a way to work around this, please let me know.
 
