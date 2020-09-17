@@ -23,6 +23,16 @@ to get a visual reprentation of the abstract syntax tree
 ![](simple-tree.png?raw=true)
 
 
+## Known Issues
+
+[It was pointed out correctly](https://github.com/gnebehay/parser/issues/3)
+that all operators behave as right-associative instead of as left-associative, as they should.
+This means that for example `7-4+2` evaluates to `1` instead of `5`.
+Surprisingly, it seems that it is an (inherent limitation)[https://cs.stackexchange.com/a/43071]
+of LL(1) parsing that you can't model left-associativity.
+In case you know of a way to work around this, please let me know.
+
+
 ## Introduction
 
 Creating a hand-written parser for anything is completely useless nowadays as there are tools like
@@ -34,7 +44,7 @@ as in my undergrad studies at TU Vienna we were skipping the low-level work
 and built a parser based on yacc/bison.
 I really enjoyed doing this small side project
 because it takes you back to the roots of computer science
-(this stuff dates back to 1969, according to [Wikipedia](https://en.wikipedia.org/wiki/LL_parser)
+(this stuff dates back to 1969, according to [Wikipedia](https://en.wikipedia.org/wiki/LL_parser))
 and I like a lot how you end up with a beautiful and simple solution.
 
 Be aware that I am by no means an expert in compiler construction
