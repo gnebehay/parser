@@ -1,7 +1,7 @@
 # A Handwritten Math Parser for Python
 
-This repository contains a handwritten parser for simple mathematical expressions of the form `2*(3+4)`
-written in 100 lines of Python code.
+This repository contains a handwritten parser for simple mathematical expressions
+of the form `2*(3+4)` written in 100 lines of Python code.
 It exists solely for educational reasons.
 
 ## How to Use it
@@ -44,8 +44,8 @@ The literature regarding this topic is very formal,
 which makes it a bit hard to get into the topic for an uninitiated person.
 In this description, I have tried to focus more on intuitive explanations.
 However, to me it is quite clear that if you don't stick to the theory,
-then you will soon run into problems, as I found it rather difficult to debug issues
-whenever something goes wrong.
+then you will soon run into things that are hard to make sense of,
+if you cannot connect it to what's going on in the literature.
 
 
 ## Problem
@@ -65,10 +65,10 @@ but in general LL(1) parsers have a reputation for being very simple to implemen
 An LL(1) parser is a top-down parser that keeps replacing elements on the parser stack
 with the right-hand side of the currently matching grammar rule.
 This decision is based on two pieces of information:
-- The top symbol on the parser stack, which can be either a terminal or a non-terminal
-  (a terminal is a token that appears in the input, such as '+`,
-   while a non-terminal is the left-hand side of a grammar rule, such as `Exp`).
-- The current terminal from the input stream that is being processed
+- The top symbol on the parser stack, which can be either a terminal or a non-terminal.
+  A terminal is a token that appears in the input, such as `+`,
+  while a non-terminal is the left-hand side of a grammar rule, such as `Exp`.
+- The current terminal from the input stream that is being processed.
 
 For example, if the current symbol on the stack is `S` and the current input terminal is `a`
 and there is a rule in the grammar that allows
@@ -78,9 +78,10 @@ S -> a T
 ```
 
 then `S` should be replaced with `a T`.
-Here, `S` and `T` are non-terminals, meaning that they do not occur in the input stream literally.
-This is in contrast to `a`, which is a terminal.
-To continue the example, `a` on top of the stack is now matched to the input stream non-terminal `a`
+Here, `S` and `T` are non-terminals, and for the remainder of this document,
+capitalized grammar elements are considered non-terminals,
+and lower-case grammar elements, such as `a` are considered a terminal.
+To continue the example, `a` on top of the stack is now matched to the input stream terminal `a`
 and removed from the stack.
 The process continues until the stack is empty (which means the parsing was successful)
 or an error occurs (which means that input stream doesn't conform to the grammar).
@@ -104,8 +105,8 @@ Here is the starting point for our grammar:
 (6) Exp -> num
 ```
 
-The grammar is rather self-explanatory, however it is ambiguous,
-because it contains rules of the form `NtN`.
+The grammar is rather self-explanatory.
+It is however ambiguous, because it contains rules of the form `NtN`.
 This means that it is not defined yet whether `2+3*4` should be interpreted
 as `2+3=5` followed by `5*4=20` or as `3*4=12` followed by `2+12=14`.
 By cleverly re-writing the grammar, the operator precedence can be encoded in the grammar.
@@ -149,7 +150,7 @@ Compare this to the derivation of `3*4+2`
 (8) num * num + num
 ```
 
-We see that in both examples the order in which the rules for operators
+We see that in both examples the order in which the rules for the operators
 `+` and `*` are applied is the same.
 It is perhaps slightly confusing that `+` appears first,
 but if you look at the resulting parse tree you can convince yourself that
@@ -163,9 +164,13 @@ This is what one `L` in `LL(1)` actually stands for, so this is also how our par
 
 However, there is one more catch.
 The grammar we came up with is now non-ambiguous, but still it cannot be parsed by an LL(1) parser,
-because multiple rules start with the same non-terminal and the parser would need to look ahead more than one token to figure out which rule to apply.
-Indeed, for the example above you have to look ahead more than one rule to figure out the derivation yourself.
-One can make the grammar LL(1)-parser-friendly by rewriting all the left recursions in the grammar rules as right recursions.
+because multiple rules start with the same non-terminal
+and the parser would need to look ahead more than one token to figure out which rule to apply.
+Indeed, for the example above you have to look ahead more than one rule
+to figure out the derivation yourself.
+As the `1` in `LL(1)` indicates, LL(1)-parsers only look ahead one symbol.
+Luckily, one can make the grammar LL(1)-parser-friendly by rewriting all the left recursions
+in the grammar rules as right recursions.
 
 ```
 (0)  S     -> Exp $
@@ -184,7 +189,8 @@ One can make the grammar LL(1)-parser-friendly by rewriting all the left recursi
 Here, `ϵ` means that the current symbol of the stack should be just popped off,
 but not be replaced by anything else.
 
-Also, we added another rule `(0)` that makes sure that the parser understands when the input is done.
+Also, we added another rule `(0)` that makes sure
+that the parser understands when the input is finished.
 Here, `$` stands for end of input.
 
 
@@ -263,8 +269,9 @@ This corresponds to rule `(9)`.
 If it is not a number, it must be a `(`, so we try to consume this instead
 (the function `match()` raises an exception if the expected and the incoming tokens are different).
 
+
 ## Literature
 
 [Wikipedia article for LL parsing](https://en.wikipedia.org/wiki/LL_parser)
-[Pierre Geurts' slides on compilers](https://people.montefiore.uliege.be/geurts/Cours/compil/2017/compilers-slides-2017-2018.pdf)
 
+[Pierre Geurts' slides on compilers](https://people.montefiore.uliege.be/geurts/Cours/compil/2017/compilers-slides-2017-2018.pdf)
