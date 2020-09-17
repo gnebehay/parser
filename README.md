@@ -1,7 +1,8 @@
-# A Handwritten Math Parser for Python
+# A Math Parser for Python
 
-This repository contains a handwritten parser for simple mathematical expressions
+This repository contains a parser for simple mathematical expressions
 of the form `2*(3+4)` written in 100 lines of Python code.
+No dependencies are used except for what can be found in the Python standard library.
 It exists solely for educational reasons.
 
 ## How to Use it
