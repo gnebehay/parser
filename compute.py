@@ -1,13 +1,14 @@
 import sys
-
+import operator
 import parser
 
 
 operations = {
-    parser.TokenType.T_PLUS: lambda x, y: x + y,
-    parser.TokenType.T_MINUS: lambda x, y: x - y,
-    parser.TokenType.T_MULT: lambda x, y: x * y,
-    parser.TokenType.T_DIV: lambda x, y: x / y}
+    parser.TokenType.T_PLUS: operator.add,
+    parser.TokenType.T_MINUS: operator.sub,
+    parser.TokenType.T_MULT: operator.mul,
+    parser.TokenType.T_DIV: operator.floordiv
+}
 
 
 def compute(node):
