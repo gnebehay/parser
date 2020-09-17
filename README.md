@@ -17,7 +17,7 @@ python graphviz.py '2*(3+4)' > graphviz_input
 dot -Tpng graphviz_input -o output.png
 ```
 to get a visual reprentation of the abstract syntax tree
-(this requires having [Graphviz](https://graphviz.org/) installed.
+(this requires having [Graphviz](https://graphviz.org/) installed).
 
 ![](simple-tree.png?raw=true)
 
@@ -39,6 +39,13 @@ and I like a lot how you end up with a beautiful and simple solution.
 Be aware that I am by no means an expert in compiler construction
 and someone who is would probably shudder at some of the things happening here,
 but to me it was a nice educational exercise.
+
+The literature regarding this topic is very formal,
+which makes it a bit hard to get into the topic for an uninitiated person.
+In this description, I have tried to focus more on intuitive explanations.
+However, to me it is quite clear that if you don't stick to the theory,
+then you will soon run into problems, as I found it rather difficult to debug issues
+whenever something goes wrong.
 
 
 ## Problem
@@ -84,7 +91,7 @@ In our case however the grammar is so simple that this would almost be an overki
 the parsing table is represented by some if-statements throughout the code.
 
 
-# The Grammar
+## The Grammar
 
 Here is the starting point for our grammar:
 
@@ -181,7 +188,7 @@ Also, we added another rule `(0)` that makes sure that the parser understands wh
 Here, `$` stands for end of input.
 
 
-# Constructing the parsing table
+## Constructing the parsing table
 
 While we are not going to use an explicit parsing table, we still need to know its contents
 so that the parser can determine which rule to apply next.
@@ -208,7 +215,7 @@ num -> rule (9)
 
 Note that the rules can only be applied when the current symbol on the stack is fitting to the
 left-hand side of the grammar rule.
-For example, rule (2) can only be applied if currently `Exp'` is on the stack.
+For example, rule `(2)` can only be applied if currently `Exp'` is on the stack.
 
 Since we also have some rules that can be expanded to `ϵ`,
 we need to figure out when that should actually happen.
@@ -218,7 +225,20 @@ The nullable non-terminals in our case are `Exp'` and `Exp2'`.
 So whenever we encounter `)` or `$` in the inputstream while `Exp'` is on top of the stack,
 we just pop `Exp'` off and move on.
 
-# Implementation notes
+
+## Obtaining the Abstract Syntax Tree
+
+The abstract syntax tree can be constructed on the fly during parsing.
+The trick here is to only include those elements that are interesting
+(in our case `num, +, -, *, /` and skip over all the elements that are
+only there for grammatical reasons.
+
+One thing you might find worthwile to try is to start with the concrete syntax tree
+that includes all the elements of the grammar and kick out things that you find are useless.
+Keeping things visualized definitely helps with this.
+
+
+## Implementation notes
 
 A nice thing about LL(1) parsing is that you can just use the call stack for keeping track
 of the current non-terminal.
@@ -239,6 +259,12 @@ def parse_e3(tokens):
 
 Here, it is checked whether the current token from the input stream is a number.
 If it is, we consume the input token directly without putting it on some intermediate stack.
-This corresponds to rule (9).
+This corresponds to rule `(9)`.
 If it is not a number, it must be a `(`, so we try to consume this instead
-(the function `match()` raises an exception if the expected and the incoming token are different).
+(the function `match()` raises an exception if the expected and the incoming tokens are different).
+
+## Literature
+
+[Wikipedia article for LL parsing](https://en.wikipedia.org/wiki/LL_parser)
+[Pierre Geurts' slides on compilers](https://people.montefiore.uliege.be/geurts/Cours/compil/2017/compilers-slides-2017-2018.pdf)
+
