@@ -16,7 +16,8 @@ This is perhaps not so surprising, but you can also run
 python graphviz.py '2*(3+4)' > graphviz_input
 dot -Tpng graphviz_input -o output.png
 ```
-to get a visual reprentation of the abstract syntax tree.
+to get a visual reprentation of the abstract syntax tree
+(this requires having [Graphviz](https://graphviz.org/) installed.
 
 ![](simple-tree.png?raw=true)
 
@@ -33,11 +34,10 @@ and built a parser based on yacc/bison.
 I really enjoyed doing this small side project
 because it takes you back to the roots of computer science
 (this stuff dates back to 1969, according to [Wikipedia](https://en.wikipedia.org/wiki/LL_parser)
-and I liked a lot how you end up with a beautiful and simple solution.
+and I like a lot how you end up with a beautiful and simple solution.
 
-Be aware that I am by no means an expert in anything what is happening here and a
-person well versed in compiler construction would probably shudder
-looking at some of the things happening here,
+Be aware that I am by no means an expert in compiler construction
+and someone who is would probably shudder at some of the things happening here,
 but to me it was a nice educational exercise.
 
 
@@ -59,9 +59,11 @@ An LL(1) parser is a top-down parser that keeps replacing elements on the parser
 with the right-hand side of the currently matching grammar rule.
 This decision is based on two pieces of information:
 - The top symbol on the parser stack, which can be either a terminal or a non-terminal
-- The current token from the input stream that is being processed
+  (a terminal is a token that appears in the input, such as '+`,
+   while a non-terminal is the left-hand side of a grammar rule, such as `Exp`).
+- The current terminal from the input stream that is being processed
 
-For example, if the current symbol on the stack is `S` and the current token is `a`
+For example, if the current symbol on the stack is `S` and the current input terminal is `a`
 and there is a rule in the grammar that allows
 
 ```
@@ -71,7 +73,7 @@ S -> a T
 then `S` should be replaced with `a T`.
 Here, `S` and `T` are non-terminals, meaning that they do not occur in the input stream literally.
 This is in contrast to `a`, which is a terminal.
-To continue the example, `a` on top of the stack is now matched to the input stream token `a`
+To continue the example, `a` on top of the stack is now matched to the input stream non-terminal `a`
 and removed from the stack.
 The process continues until the stack is empty (which means the parsing was successful)
 or an error occurs (which means that input stream doesn't conform to the grammar).
@@ -87,15 +89,15 @@ the parsing table is represented by some if-statements throughout the code.
 Here is the starting point for our grammar:
 
 ```
-(1) Exp -> Exp '+' Exp
-(2) Exp -> Exp '-' Exp
-(3) Exp -> Exp '*' Exp
-(4) Exp -> Exp '/' Exp
-(5) Exp -> '(' Exp ')'
+(1) Exp -> Exp + Exp
+(2) Exp -> Exp - Exp
+(3) Exp -> Exp * Exp
+(4) Exp -> Exp / Exp
+(5) Exp -> ( Exp )
 (6) Exp -> num
 ```
 
-The grammar is rather self-explanatory, however it is still ambiguous,
+The grammar is rather self-explanatory, however it is ambiguous,
 because it contains rules of the form `NtN`.
 This means that it is not defined yet whether `2+3*4` should be interpreted
 as `2+3=5` followed by `5*4=20` or as `3*4=12` followed by `2+12=14`.
@@ -126,7 +128,7 @@ For the previous example `2+3*4` the following derivations would be used from no
 (8) num + num * num
 ```
 
-Compare this to the derivation of `3*4`+2
+Compare this to the derivation of `3*4+2`
 
 ```
     Exp
@@ -140,9 +142,11 @@ Compare this to the derivation of `3*4`+2
 (8) num * num + num
 ```
 
-We see that in both examples the order in which the operators `+` and `*` are applied is the same.
-It is perhaps slightly confusing that `+` appears first, but if you look at the resulting parse tree
-you can convince yourself that this means that `*` needs to be evaluated first.
+We see that in both examples the order in which the rules for operators
+`+` and `*` are applied is the same.
+It is perhaps slightly confusing that `+` appears first,
+but if you look at the resulting parse tree you can convince yourself that
+the result of `*` flows as an input to `+` and therefore it needs to be computed first.
 
 Here, I used a left-most derivation of the input stream.
 This means that you would always try to replace the left-most symbol next
@@ -150,28 +154,31 @@ This means that you would always try to replace the left-most symbol next
 and not something in the middle of your parse tree.
 This is what one `L` in `LL(1)` actually stands for, so this is also how our parser will operate.
 
-However, there is one more catch.  
-The grammar we produced now is non-ambiguous, but still it cannot be parsed by an LL(1) parser,
+However, there is one more catch.
+The grammar we came up with is now non-ambiguous, but still it cannot be parsed by an LL(1) parser,
 because multiple rules start with the same non-terminal and the parser would need to look ahead more than one token to figure out which rule to apply.
 Indeed, for the example above you have to look ahead more than one rule to figure out the derivation yourself.
 One can make the grammar LL(1)-parser-friendly by rewriting all the left recursions in the grammar rules as right recursions.
 
 ```
-(0) S     -> Exp $
-(1) Exp   -> Exp2 Exp'
-(2) Exp'  -> + Exp2 Exp'
-(3) Exp'  -> - Exp2 Exp'
-(4) Exp'  -> ϵ
-(5) Exp2  -> Exp3 Exp2'
-(6) Exp2' -> * Exp3 Exp2'
-(7) Exp2' -> / Exp3 Exp2'
-(8) Exp2' -> ϵ
-(9) Exp3  -> num
-(10) Exp3 -> ( Exp )
+(0)  S     -> Exp $
+(1)  Exp   -> Exp2 Exp'
+(2)  Exp'  -> + Exp2 Exp'
+(3)  Exp'  -> - Exp2 Exp'
+(4)  Exp'  -> ϵ
+(5)  Exp2  -> Exp3 Exp2'
+(6)  Exp2' -> * Exp3 Exp2'
+(7)  Exp2' -> / Exp3 Exp2'
+(8)  Exp2' -> ϵ
+(9)  Exp3  -> num
+(10) Exp3  -> ( Exp )
 ```
 
 Here, `ϵ` means that the current symbol of the stack should be just popped off,
 but not be replaced by anything else.
+
+Also, we added another rule `(0)` that makes sure that the parser understands when the input is done.
+Here, `$` stands for end of input.
 
 
 # Constructing the parsing table
@@ -181,12 +188,12 @@ so that the parser can determine which rule to apply next.
 To simplify the contents of the parsing table, I will use one little trick that I discovered
 while implementing the whole thing and that is:
 
-If there is only one grammar rule for a particular non-terminal,
-just expand it without caring about what is on the input stream.
+*If there is only one grammar rule for a particular non-terminal,
+just expand it without caring about what is on the input stream.*
 
 This is a bit different from what you find in the literature,
 where you are instructed to only expand non-terminals if the current terminal permits it.
-In our case, this means that the non-terminals `S, Exp` and `Exp2` should be expanded no matter what.
+In our case, this means that the non-terminals `S, Exp` and `Exp2` will be expanded no matter what.
 
 For the other non-terminals, it is quite clear which rule to apply:
 
@@ -197,9 +204,14 @@ For the other non-terminals, it is quite clear which rule to apply:
 /   -> rule (7)
 num -> rule (9)
 (   -> rule (10)
+```
+
+Note that the rules can only be applied when the current symbol on the stack is fitting to the
+left-hand side of the grammar rule.
+For example, rule (2) can only be applied if currently `Exp'` is on the stack.
 
 Since we also have some rules that can be expanded to `ϵ`,
-we need to figure out when that should happen in these cases.
+we need to figure out when that should actually happen.
 For this it is necessary to look at what terminal appears *after* a nullable non-terminal.
 The nullable non-terminals in our case are `Exp'` and `Exp2'`.
 `Exp'` is followed by `)` and `$` and `Exp2` is followed by `+, -, )` and `$`.
