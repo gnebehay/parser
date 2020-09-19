@@ -300,7 +300,7 @@ How can we now implement left-associativity?
 The key insight here is that something needs to be done whenever you have two
 operators of the same precedence level in a row.
 So whenever we parse a `-` or `+` operation and the *right* child
-of that oparation is also a `-` or `+`,
+of that operation is also a `-` or `+`,
 then we just shuffle the tree around, as best explained by looking at the actual code:
 
 ```python
