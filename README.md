@@ -98,29 +98,24 @@ the parsing table is represented by some if-statements throughout the code.
 Here is the starting point for our grammar:
 
 ```
-(1) Exp -> Exp + Exp
-(2) Exp -> Exp - Exp
-(3) Exp -> Exp * Exp
-(4) Exp -> Exp / Exp
-(5) Exp -> ( Exp )
-(6) Exp -> num
+(1) Exp -> Exp [ + | - | * | / ] Exp
+(2) Exp -> ( Exp )
+(3) Exp -> num
 ```
 
 The grammar is rather self-explanatory.
-It is however ambiguous, because it contains rules of the form `NtN`.
+It is however ambiguous, because it contains a rule of the form `NtN`.
 This means that it is not defined yet whether `2+3*4` should be interpreted
 as `2+3=5` followed by `5*4=20` or as `3*4=12` followed by `2+12=14`.
 By cleverly re-writing the grammar, the operator precedence can be encoded in the grammar.
 
 ```
-(1) Exp -> Exp + Exp2
-(2) Exp -> Exp - Exp2
-(3) Exp -> Exp2
-(4) Exp2 -> Exp2 * Exp3
-(5) Exp2 -> Exp2 / Exp3
-(6) Exp2 -> Exp3
-(7) Exp3 -> ( Exp )
-(8) Exp3 -> num
+(1) Exp -> Exp [ + | - ] Exp2
+(2) Exp -> Exp2
+(3) Exp2 -> Exp2 [ * | / ] Exp3
+(4) Exp2 -> Exp3
+(5) Exp3 -> ( Exp )
+(6) Exp3 -> num
 ```
 
 For the previous example `2+3*4` the following derivations would be used from now on:
@@ -128,13 +123,13 @@ For the previous example `2+3*4` the following derivations would be used from no
 ```
     Exp
 (1) Exp + Exp2
-(3) Exp2 + Exp2
-(6) Exp3 + Exp2
-(8) num + Exp2
-(4) num + Exp2 * Exp3
-(6) num + Exp3 * Exp3
-(8) num + num * Exp3
-(8) num + num * num
+(2) Exp2 + Exp2
+(4) Exp3 + Exp2
+(6) num + Exp2
+(3) num + Exp2 * Exp3
+(4) num + Exp3 * Exp3
+(6) num + num * Exp3
+(6) num + num * num
 ```
 
 Compare this to the derivation of `3*4+2`
@@ -142,13 +137,13 @@ Compare this to the derivation of `3*4+2`
 ```
     Exp
 (1) Exp + Exp2
-(3) Exp2 + Exp2
-(4) Exp2 * Exp3 + Exp2
-(6) Exp3 * Exp3 + Exp2
-(8) num * Exp3 + Exp2
-(8) num * num + Exp2
-(6) num * num + Exp3
-(8) num * num + num
+(2) Exp2 + Exp2
+(3) Exp2 * Exp3 + Exp2
+(4) Exp3 * Exp3 + Exp2
+(6) num * Exp3 + Exp2
+(6) num * num + Exp2
+(4) num * num + Exp3
+(6) num * num + num
 ```
 
 We see that in both examples the order in which the rules for the operators
@@ -174,17 +169,15 @@ Luckily, one can make the grammar LL(1)-parser-friendly by rewriting all the lef
 in the grammar rules as right recursions.
 
 ```
-(0)  S     -> Exp $
-(1)  Exp   -> Exp2 Exp'
-(2)  Exp'  -> + Exp2 Exp'
-(3)  Exp'  -> - Exp2 Exp'
-(4)  Exp'  -> ϵ
-(5)  Exp2  -> Exp3 Exp2'
-(6)  Exp2' -> * Exp3 Exp2'
-(7)  Exp2' -> / Exp3 Exp2'
-(8)  Exp2' -> ϵ
-(9)  Exp3  -> num
-(10) Exp3  -> ( Exp )
+(0) S     -> Exp $
+(1) Exp   -> Exp2 Exp'
+(2) Exp'  -> [ + | - ] Exp2 Exp'
+(3) Exp'  -> ϵ
+(4) Exp2  -> Exp3 Exp2'
+(5) Exp2' -> [ * | / ] Exp3 Exp2'
+(6) Exp2' -> ϵ
+(7) Exp3  -> num
+(8) Exp3  -> ( Exp )
 ```
 
 Here, `ϵ` means that the current symbol of the stack should be just popped off,
@@ -213,11 +206,11 @@ For the other non-terminals, it is quite clear which rule to apply:
 
 ```
 +   -> rule (2)
--   -> rule (3)
-*   -> rule (6)
-/   -> rule (7)
-num -> rule (9)
-(   -> rule (10)
+-   -> rule (2)
+*   -> rule (5)
+/   -> rule (5)
+num -> rule (7)
+(   -> rule (8)
 ```
 
 Note that the rules can only be applied when the current symbol on the stack is fitting to the
@@ -229,7 +222,7 @@ we need to figure out when that should actually happen.
 For this it is necessary to look at what terminal appears *after* a nullable non-terminal.
 The nullable non-terminals in our case are `Exp'` and `Exp2'`.
 `Exp'` is followed by `)` and `$` and `Exp2` is followed by `+, -, )` and `$`.
-So whenever we encounter `)` or `$` in the inputstream while `Exp'` is on top of the stack,
+So whenever we encounter `)` or `$` in the input stream while `Exp'` is on top of the stack,
 we just pop `Exp'` off and move on.
 
 
@@ -254,7 +247,7 @@ def parse_e3(tokens):
 
 Here, it is checked whether the current token from the input stream is a number.
 If it is, we consume the input token directly without putting it on some intermediate stack.
-This corresponds to rule `(9)`.
+This corresponds to rule `(7)`.
 If it is not a number, it must be a `(`, so we try to consume this instead
 (the function `match()` raises an exception if the expected and the incoming tokens are different).
 
