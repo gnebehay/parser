@@ -242,7 +242,7 @@ that does not much else than first calling `parse_e2()` and then calling `parse_
 
 A look at the function `parse_e3()` shows us how to handle terminals:
 
-```
+```python
 def parse_e3(tokens):
     if tokens[0].token_type == TokenType.T_NUM:
         return tokens.pop(0)
@@ -303,7 +303,7 @@ So whenever we parse a `-` or `+` operation and the *right* child
 of that oparation is also a `-` or `+`,
 then we just shuffle the tree around, as best explained by looking at the actual code:
 
-```
+```python
 def parse_ea(tokens, left_node):
     if tokens[0].token_type in [TokenType.T_PLUS, TokenType.T_MINUS]:
         node = tokens.pop(0)
