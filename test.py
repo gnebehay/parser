@@ -11,8 +11,8 @@ def test_computation(inputstring, expected_output):
 
 test_computation('1+1', 2)
 test_computation('1-1', 0)
-# This fails because all operators are right-associative
-#test_computation('3-2+1', 2)
+test_computation('3-2+1', 2)
+test_computation('8/4/2', 1)
 test_computation('1*2', 2)
 test_computation('(1+7)*(9+2)', 88)
 test_computation('(2+7)/4', 2.25)

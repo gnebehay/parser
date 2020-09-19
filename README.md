@@ -1,7 +1,7 @@
 # A Math Parser for Python
 
 This repository contains a parser for simple mathematical expressions
-of the form `2*(3+4)` written in 100 lines of Python code.
+of the form `2*(3+4)` written in 116 lines of Python code.
 No dependencies are used except for what can be found in the Python standard library.
 It exists solely for educational reasons.
 
@@ -21,14 +21,6 @@ to get a visual reprentation of the abstract syntax tree
 (this requires having [Graphviz](https://graphviz.org/) installed).
 
 ![](simple-tree.png?raw=true)
-
-
-## Known Issues
-
-[It was pointed out correctly](https://github.com/gnebehay/parser/issues/3)
-that all operators behave as right-associative instead of as left-associative, as they should.
-This means that for example `7-4+2` currently evaluates to `1` instead of `5`.
-This needs to be solved by reworking the grammar slightly, will update soon.
 
 
 ## Introduction

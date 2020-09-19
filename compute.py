@@ -7,7 +7,7 @@ operations = {
     parser.TokenType.T_PLUS: operator.add,
     parser.TokenType.T_MINUS: operator.sub,
     parser.TokenType.T_MULT: operator.mul,
-    parser.TokenType.T_DIV: operator.floordiv
+    parser.TokenType.T_DIV: operator.truediv
 }
 
 

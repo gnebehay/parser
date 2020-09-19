@@ -58,7 +58,15 @@ def parse_ea(tokens, left_node):
     if tokens[0].token_type in [TokenType.T_PLUS, TokenType.T_MINUS]:
         node = tokens.pop(0)
         node.children.append(left_node)
-        node.children.append(parse_e(tokens))
+        next_node = parse_e(tokens)
+
+        if next_node.token_type in [TokenType.T_PLUS, TokenType.T_MINUS]:
+            next_left_node = next_node.children[0]
+            node.children.append(next_left_node)
+            next_node.children[0] = node
+            return next_node
+
+        node.children.append(next_node)
         return node
     elif tokens[0].token_type in [TokenType.T_RPAR, TokenType.T_END]:
         return left_node
@@ -73,7 +81,15 @@ def parse_e2a(tokens, left_node):
     if tokens[0].token_type in [TokenType.T_MULT, TokenType.T_DIV]:
         node = tokens.pop(0)
         node.children.append(left_node)
-        node.children.append(parse_e2(tokens))
+        next_node = parse_e(tokens)
+
+        if next_node.token_type in [TokenType.T_MULT, TokenType.T_DIV]:
+            next_left_node = next_node.children[0]
+            node.children.append(next_left_node)
+            next_node.children[0] = node
+            return next_node
+
+        node.children.append(next_node)
         return node
     elif tokens[0].token_type in [TokenType.T_PLUS, TokenType.T_MINUS, TokenType.T_END, TokenType.T_RPAR]:
         return left_node
