@@ -233,18 +233,6 @@ So whenever we encounter `)` or `$` in the inputstream while `Exp'` is on top of
 we just pop `Exp'` off and move on.
 
 
-## Obtaining the Abstract Syntax Tree
-
-The abstract syntax tree can be constructed on the fly during parsing.
-The trick here is to only include those elements that are interesting
-(in our case `num, +, -, *, /` and skip over all the elements that are
-only there for grammatical reasons.
-
-One thing you might find worthwile to try is to start with the concrete syntax tree
-that includes all the elements of the grammar and kick out things that you find are useless.
-Keeping things visualized definitely helps with this.
-
-
 ## Implementation notes
 
 A nice thing about LL(1) parsing is that you can just use the call stack for keeping track
@@ -269,6 +257,72 @@ If it is, we consume the input token directly without putting it on some interme
 This corresponds to rule `(9)`.
 If it is not a number, it must be a `(`, so we try to consume this instead
 (the function `match()` raises an exception if the expected and the incoming tokens are different).
+
+
+## Obtaining the Abstract Syntax Tree
+
+The abstract syntax tree (AST) can be constructed on the fly during parsing.
+The trick here is to only include those elements that are interesting
+(in our case `num, +, -, *, /` and skip over all the elements that are
+only there for grammatical reasons.
+
+One thing you might find worthwile to try is to start with the concrete syntax tree
+that includes all the elements of the grammar and kick out things that you find are useless.
+Keeping things visualized definitely helps with this.
+
+
+## Solving Left-Associativity
+
+All of the standard math operators are left-associative,
+meaning that `3+2+1` should be interpreted as `((3+2)+1)`.
+For addition, getting this right is not super-crucial, as additions anyway are commutative.
+However, once you start playing around with subtractions (or divisions), this becomes really important,
+as you definitely want `3-2-1` to evaluate to `0` and not to `(3-(2-1))=2`.
+Indeed, this is something that I overlooked in the first version.
+
+Now, interestingly in vanilla LL(1) parsing there is no support for left recursion.
+As you saw before, we actually had to rewrite all left recursions using right recursions.
+However, left-associativity essentially means using left recursions and right-associativity means
+using right recursions.
+If you just blindly use right recursions like I did, then suddenly all your operators are right-associative.
+Let's look at two different ASTs for the expression `3-2-1`.
+
+This is the default AST, implementing right-associativity.
+You can recreate this behaviour and also the picture by going back to commit `14e9b79`.
+
+![](right-assoc.png?raw=true)
+
+This is the desired AST, implementing left-associativity.
+
+![](left-assoc.png?raw=true)
+
+How can we now implement left-associativity?
+The key insight here is that something needs to be done whenever you have two
+operators of the same precedence level in a row.
+So whenever we parse a `-` or `+` operation and the *right* child
+of that oparation is also a `-` or `+`,
+then we just shuffle the tree around, as best explained by looking at the actual code:
+
+```
+def parse_ea(tokens, left_node):
+    if tokens[0].token_type in [TokenType.T_PLUS, TokenType.T_MINUS]:
+        node = tokens.pop(0)
+        node.children.append(left_node)
+        next_node = parse_e(tokens)
+
+        if next_node.token_type in [TokenType.T_PLUS, TokenType.T_MINUS]:
+            next_left_node = next_node.children[0]
+            node.children.append(next_left_node)
+            next_node.children[0] = node
+            return next_node
+
+        node.children.append(next_node)
+        return node
+```
+
+The same needs to be done for `*` and `/`.
+So in some sense we cheated a little because we didn't solve left-associativity in LL(1)-parsing,
+but we rectified the situation directly in the AST.
 
 
 ## Literature
