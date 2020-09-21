@@ -25,9 +25,14 @@ to get a visual representation of the abstract syntax tree
 
 ## Introduction
 
-Creating a hand-written parser for anything is completely useless nowadays as there are tools like
-[ANTLR](https://github.com/antlr/antlr4) that perform all the heavy lifting for you.
-Moreover, this particular problem must have been solved millions of times
+To my personal surprise, it seems that
+[most mainstream languages nowadays are being parsed using handwritten parsers](https://stackoverflow.com/questions/6319086/are-gcc-and-clang-parsers-really-handwritten),
+meaning that no compiler generation tools such as [ANTLR](https://github.com/antlr/antlr4)
+are used.
+Since a basic building block of almost all programming languages are math expressions,
+this repository explores building a handwritten parser for these simple math expressions.
+
+This particular problem must have been solved millions of times
 by undergrad computer science students all around the world.
 However, it has not been solved by me until this date,
 as in my undergrad studies at TU Vienna we were skipping the low-level work
