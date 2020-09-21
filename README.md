@@ -17,7 +17,7 @@ This is perhaps not so surprising, but you can also run
 python graphviz.py '2*(3+4)' > graphviz_input
 dot -Tpng graphviz_input -o output.png
 ```
-to get a visual reprentation of the abstract syntax tree
+to get a visual representation of the abstract syntax tree
 (this requires having [Graphviz](https://graphviz.org/) installed).
 
 ![](simple-tree.png?raw=true)
