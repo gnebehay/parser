@@ -21,6 +21,9 @@ test_computation('2*3+4', 10)
 test_computation('2*(3+4)', 14)
 test_computation('2+3*4', 14)
 test_computation('2+(3*4)', 14)
+test_computation('2-(3*4+1)', -11)
+test_computation('2*(3*4+1)', 26)
+test_computation('8/((1+3)*2)', 1)
 
 try:
     test_computation('1+1)', 1)
@@ -29,5 +32,3 @@ except Exception:
     raised = True
 assert raised
 
-# This fails
-test_computation('2-(3*4+1)', -11)
