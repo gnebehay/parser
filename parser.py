@@ -81,7 +81,7 @@ def parse_e2a(tokens, left_node):
     if tokens[0].token_type in [TokenType.T_MULT, TokenType.T_DIV]:
         node = tokens.pop(0)
         node.children.append(left_node)
-        next_node = parse_e(tokens)
+        next_node = parse_e2(tokens)
 
         if next_node.token_type in [TokenType.T_MULT, TokenType.T_DIV]:
             next_left_node = next_node.children[0]
