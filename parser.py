@@ -47,7 +47,7 @@ def match(tokens, token):
     if tokens[0].token_type == token:
         return tokens.pop(0)
     else:
-        raise_syntax_error(tokens)
+        raise Exception('Invalid syntax on token {}'.format(tokens[0].token_type))
 
 
 def parse_e(tokens):
@@ -62,7 +62,7 @@ def parse_e(tokens):
     if tokens[0].token_type in [TokenType.T_END, TokenType.T_RPAR]:
         return left_node
 
-    raise_syntax_error(tokens)
+    raise Exception('Invalid syntax on token {}'.format(tokens[0].token_type))
 
 
 def parse_e2(tokens):
@@ -77,7 +77,7 @@ def parse_e2(tokens):
     if tokens[0].token_type in [TokenType.T_PLUS, TokenType.T_MINUS, TokenType.T_END, TokenType.T_RPAR]:
         return left_node
 
-    raise_syntax_error(tokens)
+    raise Exception('Invalid syntax on token {}'.format(tokens[0].token_type))
 
 
 def parse_e3(tokens):
@@ -88,10 +88,6 @@ def parse_e3(tokens):
     e_node = parse_e(tokens)
     match(tokens, TokenType.T_RPAR)
     return e_node
-
-
-def raise_syntax_error(tokens):
-    raise Exception('Invalid syntax on token {}'.format(tokens[0].token_type))
 
 
 def parse(inputstring):
