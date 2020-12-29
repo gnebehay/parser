@@ -50,70 +50,32 @@ def match(tokens, token):
         raise_syntax_error(tokens)
 
 
-def parse_e(tokens, parent_node):
-    # TODO: Parent node is the same?
-    return parse_ea(tokens, parse_e2(tokens, parent_node), parent_node)
+def parse_e(tokens):
+    left_node = parse_e2(tokens)
 
-
-def parse_ea(tokens, left_node, parent_node):
-    if tokens[0].token_type in [TokenType.T_PLUS, TokenType.T_MINUS]:
+    while tokens[0].token_type in [TokenType.T_PLUS, TokenType.T_MINUS]:
         node = tokens.pop(0)
+        node.children.append(left_node)
+        node.children.append(parse_e2(tokens))
+        left_node = node
 
-        if parent_node is None:
-            node.children.append(left_node)
-            return parse_e(tokens, node)
-
-        if parent_node.token_type in [TokenType.T_PLUS, TokenType.T_MINUS]:
-
-            parent_node.children.append(left_node)
-            node.children.append(parent_node)
-
-            return parse_e(tokens, node)
-
-        assert false # Unreachable code, hopefully
-
-    elif tokens[0].token_type in [TokenType.T_END, TokenType.T_RPAR]:
-
-        if parent_node is None:
-            return left_node
-
-        parent_node.children.append(left_node)
-        return parent_node
+    if tokens[0].token_type in [TokenType.T_END, TokenType.T_RPAR]:
+        return left_node
 
     raise_syntax_error(tokens)
 
 
-def parse_e2(tokens, parent_node):
-    return parse_e2a(tokens, parse_e3(tokens), parent_node)
+def parse_e2(tokens):
+    left_node = parse_e3(tokens)
 
-
-def parse_e2a(tokens, left_node, parent_node):
-    if tokens[0].token_type in [TokenType.T_MULT, TokenType.T_DIV]:
+    while tokens[0].token_type in [TokenType.T_MULT, TokenType.T_DIV]:
         node = tokens.pop(0)
-
-        if parent_node is None:
-            node.children.append(left_node)
-            return parse_e2(tokens, node)
-
-        if parent_node.token_type in [TokenType.T_MULT, TokenType.T_DIV]:
-
-            parent_node.children.append(left_node)
-            node.children.append(parent_node)
-
-            return parse_e2(tokens, node)
-
         node.children.append(left_node)
-        parent_node.children.append(node)
+        node.children.append(parse_e3(tokens))
+        left_node = node
 
-        return parse_e2(tokens, node)
-
-    elif tokens[0].token_type in [TokenType.T_PLUS, TokenType.T_MINUS, TokenType.T_END, TokenType.T_RPAR]:
-
-        if parent_node is None:
-            return left_node
-
-        parent_node.children.append(left_node)
-        return parent_node
+    if tokens[0].token_type in [TokenType.T_PLUS, TokenType.T_MINUS, TokenType.T_END, TokenType.T_RPAR]:
+        return left_node
 
     raise_syntax_error(tokens)
 
@@ -121,8 +83,9 @@ def parse_e2a(tokens, left_node, parent_node):
 def parse_e3(tokens):
     if tokens[0].token_type == TokenType.T_NUM:
         return tokens.pop(0)
+
     match(tokens, TokenType.T_LPAR)
-    e_node = parse_e(tokens, None)
+    e_node = parse_e(tokens)
     match(tokens, TokenType.T_RPAR)
     return e_node
 
@@ -133,6 +96,6 @@ def raise_syntax_error(tokens):
 
 def parse(inputstring):
     tokens = lexical_analysis(inputstring)
-    ast = parse_e(tokens, None)
+    ast = parse_e(tokens)
     match(tokens, TokenType.T_END)
     return ast
