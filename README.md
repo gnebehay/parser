@@ -1,7 +1,7 @@
 # A Math Parser for Python
 
 This repository contains a parser for simple mathematical expressions
-of the form `2*(3+4)` written in 97 lines of Python code.
+of the form `2*(3+4)` written in 92 lines of Python code.
 No dependencies are used except for what can be found in the Python standard library.
 It exists solely for educational reasons.
 
@@ -253,6 +253,7 @@ def parse_e3(tokens):
     match(tokens, TokenType.T_LPAR)
     e_node = parse_e(tokens)
     match(tokens, TokenType.T_RPAR)
+
     return e_node
 ```
 
