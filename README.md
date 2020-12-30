@@ -1,7 +1,7 @@
 # A Math Parser for Python
 
 This repository contains a parser for simple mathematical expressions
-of the form `2*(3+4)` written in 116 lines of Python code.
+of the form `2*(3+4)` written in 97 lines of Python code.
 No dependencies are used except for what can be found in the Python standard library.
 It exists solely for educational reasons.
 
@@ -161,7 +161,7 @@ Here, I used a left-most derivation of the input stream.
 This means that you would always try to replace the left-most symbol next
 (which corresponds to the symbol on the top of the stack),
 and not something in the middle of your parse tree.
-This is what one `L` in `LL(1)` actually stands for, so this is also how our parser will operate.
+This is what one `L` in LL(1) actually stands for, so this is also how our parser will operate.
 
 However, there is one more catch.
 The grammar we came up with is now non-ambiguous, but still it cannot be parsed by an LL(1) parser,
@@ -169,7 +169,7 @@ because multiple rules start with the same non-terminal
 and the parser would need to look ahead more than one token to figure out which rule to apply.
 Indeed, for the example above you have to look ahead more than one rule
 to figure out the derivation yourself.
-As the `1` in `LL(1)` indicates, LL(1)-parsers only look ahead one symbol.
+As the `1` in LL(1) indicates, LL(1)-parsers only look ahead one symbol.
 Luckily, one can make the grammar LL(1)-parser-friendly by rewriting all the left recursions
 in the grammar rules as right recursions.
 
@@ -236,7 +236,12 @@ we just pop `Exp'` off and move on.
 A nice thing about LL(1) parsing is that you can just use the call stack for keeping track
 of the current non-terminal.
 So in the Python implementation, you will find for the non-terminal `Exp` a function `parse_e()`
-that does not much else than first calling `parse_e2()` and then calling `parse_ea` (which corresponds to `Exp'`).
+that in turn calls `parse_e2()`, corresponding to `Exp2`.
+In previous versions of this repository (e.g. commit `f1dcad8`),
+each non-terminal corresponded to exactly one function call.
+However, since many of those function calls were just passing variables around,
+it seemed to make sense to refactor the code
+and now only `parse_e()`, `parse_e2()` and `parse_e3()` are left.
 
 A look at the function `parse_e3()` shows us how to handle terminals:
 
@@ -244,6 +249,7 @@ A look at the function `parse_e3()` shows us how to handle terminals:
 def parse_e3(tokens):
     if tokens[0].token_type == TokenType.T_NUM:
         return tokens.pop(0)
+
     match(tokens, TokenType.T_LPAR)
     e_node = parse_e(tokens)
     match(tokens, TokenType.T_RPAR)
@@ -274,15 +280,17 @@ Keeping things visualized definitely helps with this.
 All of the standard math operators are left-associative,
 meaning that `3+2+1` should be interpreted as `((3+2)+1)`.
 For addition, getting this right is not super-crucial, as additions anyway are commutative.
-However, once you start playing around with subtractions (or divisions), this becomes really important,
-as you definitely want `3-2-1` to evaluate to `0` and not to `(3-(2-1))=2`.
-Indeed, this is something that I overlooked in the first version.
+However, once you start playing around with subtractions (or divisions)
+this becomes really important as you definitely want `3-2-1` to evaluate to `0`
+and not to `(3-(2-1))=2`.
+Indeed, this aspect is something that I overlooked in the first version.
 
-Now, interestingly in vanilla LL(1) parsing there is no support for left recursion.
+Interestingly, in vanilla LL(1) parsing there is no support for left recursion.
 As you saw before, we actually had to rewrite all left recursions using right recursions.
 However, left-associativity essentially means using left recursions and right-associativity means
 using right recursions.
-If you just blindly use right recursions like I did, then suddenly all your operators are right-associative.
+If you just blindly use right recursions like I did,
+then suddenly all your operators will be right-associative.
 Let's look at two different ASTs for the expression `3-2-1`.
 
 This is the default AST, implementing right-associativity.
@@ -295,32 +303,30 @@ This is the desired AST, implementing left-associativity.
 ![](left-assoc.png?raw=true)
 
 How can we now implement left-associativity?
-The key insight here is that something needs to be done whenever you have two
+The key insight here is that something needs to be done whenever you have two or more
 operators of the same precedence level in a row.
-So whenever we parse a `-` or `+` operation and the *right* child
-of that operation is also a `-` or `+`,
-then we just shuffle the tree around, as best explained by looking at the actual code:
+So whenever we parse a `-` or `+` operation and the next token to be processed is also
+either `-` or `+`, then we should actually be using left recursion.
+This requires us to step outside of the `LL(1)` paradigm for a moment and piece together the
+relevant subtree differently, for example like so:
 
 ```python
-def parse_ea(tokens, left_node):
-    if tokens[0].token_type in [TokenType.T_PLUS, TokenType.T_MINUS]:
+def parse_e(tokens):
+    left_node = parse_e2(tokens)
+
+    while tokens[0].token_type in [TokenType.T_PLUS, TokenType.T_MINUS]:
         node = tokens.pop(0)
         node.children.append(left_node)
-        next_node = parse_e(tokens)
+        node.children.append(parse_e2(tokens))
+        left_node = node
 
-        if next_node.token_type in [TokenType.T_PLUS, TokenType.T_MINUS]:
-            next_left_node = next_node.children[0]
-            node.children.append(next_left_node)
-            next_node.children[0] = node
-            return next_node
+    if tokens[0].token_type in [TokenType.T_END, TokenType.T_RPAR]:
+        return left_node
 
-        node.children.append(next_node)
-        return node
+    raise Exception('Invalid syntax on token {}'.format(tokens[0].token_type))
 ```
 
-The same needs to be done for `*` and `/`.
-So in some sense we cheated a little because we didn't solve left-associativity in LL(1)-parsing,
-but we rectified the situation directly in the AST.
+The same is done in `parse_e2()` for getting the associativity of multiplication and division right.
 
 
 ## Literature
