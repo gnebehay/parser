@@ -59,10 +59,7 @@ def parse_e(tokens):
         node.children.append(parse_e2(tokens))
         left_node = node
 
-    if tokens[0].token_type in [TokenType.T_END, TokenType.T_RPAR]:
-        return left_node
-
-    raise Exception('Invalid syntax on token {}'.format(tokens[0].token_type))
+    return left_node
 
 
 def parse_e2(tokens):
@@ -74,10 +71,7 @@ def parse_e2(tokens):
         node.children.append(parse_e3(tokens))
         left_node = node
 
-    if tokens[0].token_type in [TokenType.T_PLUS, TokenType.T_MINUS, TokenType.T_END, TokenType.T_RPAR]:
-        return left_node
-
-    raise Exception('Invalid syntax on token {}'.format(tokens[0].token_type))
+    return left_node
 
 
 def parse_e3(tokens):
@@ -85,9 +79,10 @@ def parse_e3(tokens):
         return tokens.pop(0)
 
     match(tokens, TokenType.T_LPAR)
-    e_node = parse_e(tokens)
+    expression = parse_e(tokens)
     match(tokens, TokenType.T_RPAR)
-    return e_node
+
+    return expression
 
 
 def parse(inputstring):

@@ -320,10 +320,7 @@ def parse_e(tokens):
         node.children.append(parse_e2(tokens))
         left_node = node
 
-    if tokens[0].token_type in [TokenType.T_END, TokenType.T_RPAR]:
-        return left_node
-
-    raise Exception('Invalid syntax on token {}'.format(tokens[0].token_type))
+    return left_node
 ```
 
 The same is done in `parse_e2()` for getting the associativity of multiplication and division right.
